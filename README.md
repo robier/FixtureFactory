@@ -1,6 +1,16 @@
 Forge object
 ============
 
+<p align="center">
+    <a href="https://travis-ci.org/robier/forge-object">
+        <img src="https://travis-ci.org/robier/forge-object.svg?branch=master" alt="Build Status">
+    </a>
+    <a href="https://codecov.io/gh/robier/forge-object">
+        <img src="https://codecov.io/gh/robier/forge-object/branch/master/graph/badge.svg" />
+    </a>
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT">
+</p>
+
 Easily forge your own object for testing purposes (not intended for production code).
 
 Heavily inspired by [Larvel's factories](https://laravel.com/docs/5.8/database-testing) but with one
