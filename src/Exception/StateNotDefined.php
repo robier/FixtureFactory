@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Robier\FixtureFactory\Exception;
+namespace Robier\ForgeObject\Exception;
 
 use Exception;
 

@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Robier\FixtureFactory;
+namespace Robier\ForgeObject;
 
 use ArrayAccess;
 use ArrayIterator;
 use Countable;
+use InvalidArgumentException;
 use IteratorAggregate;
+use LogicException;
 
 final class Collection implements ArrayAccess, IteratorAggregate, Countable
 {
@@ -45,7 +47,7 @@ final class Collection implements ArrayAccess, IteratorAggregate, Countable
      */
     public function offsetGet($offset)
     {
-        return $this->items[$offset];
+        return $this->get($offset);
     }
 
     /**
@@ -53,23 +55,21 @@ final class Collection implements ArrayAccess, IteratorAggregate, Countable
      */
     public function offsetSet($offset, $value)
     {
-        if(!is_object($value)){
-            // @todo throw library exception
-            throw new \InvalidArgumentException('Not object');
+        if (!is_object($value)) {
+            throw new InvalidArgumentException('Provided value is not a object');
         }
 
-        if(!is_int($offset) && !empty($offset)){
-            // @todo throw library exception
-            throw new \InvalidArgumentException('Not integer');
+        if (null !== $offset && !is_int($offset)) {
+            throw new InvalidArgumentException('Provided offset is not a integer');
         }
 
-        if(empty($offset)){
+        if (empty($offset)) {
             $this->add($value);
             return;
         }
 
-        if($offset <= count($this->items)){
-            array_splice($this->items, $offset, 0, $value);
+        if ($offset <= count($this->items)) {
+            array_splice($this->items, $offset, 0, [$value]);
             return;
         }
 
@@ -101,14 +101,44 @@ final class Collection implements ArrayAccess, IteratorAggregate, Countable
     }
 
     /**
+     * Get item from collection
+     *
+     * @param int $offset
+     * @return object
+     * @throws InvalidArgumentException
+     */
+    public function get(int $offset): object
+    {
+        if ($this->has($offset)) {
+            return $this->items[$offset];
+        }
+
+        throw new InvalidArgumentException(sprintf('Item with offset %d does not exist in collection', $offset));
+    }
+
+    /**
+     * Check if item with offset exists in collection
+     *
+     * @param int $offset
+     * @return bool
+     */
+    public function has(int $offset): bool
+    {
+        return isset($this->items[$offset]);
+    }
+
+    /**
      * Add new item to collection
      *
      * @param object $item
+     * @param object[] $items
      * @return Collection
      */
-    public function add(object $item): self
+    public function add(object $item, object ...$items): self
     {
-        $this->items[] = $item;
+        array_unshift($items, $item);
+
+        $this->items = array_merge($this->items, $items);
 
         return $this;
     }
@@ -134,7 +164,13 @@ final class Collection implements ArrayAccess, IteratorAggregate, Countable
      */
     public function apply(callable $function): self
     {
-        foreach ($this->items as $item) {
+        /**
+         * @todo maybe add additional parameter for applying $function on certain type, as one collection can have a
+         * more than one type if two collections are merged
+         * @todo validate callable
+         */
+
+        foreach ($this->items as &$item) {
             call_user_func($function, $item);
         }
 
@@ -157,10 +193,34 @@ final class Collection implements ArrayAccess, IteratorAggregate, Countable
      * Gets first item from collection
      *
      * @return object
+     * @throws LogicException
      */
     public function first(): object
     {
-        return $this->items[0];
+        $value = reset($this->items);
+
+        if (false === $value) {
+            throw new LogicException('Collection can not return first item as it\'s empty');
+        }
+
+        return $value;
+    }
+
+    /**
+     * Get last item from collection
+     *
+     * @return object
+     * @throws LogicException
+     */
+    public function last(): object
+    {
+        $value = end($this->items);
+
+        if (false === $value) {
+            throw new LogicException('Collection can not return last item as it\'s empty');
+        }
+
+        return $value;
     }
 
     /**

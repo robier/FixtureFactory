@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Robier\FixtureFactory;
+namespace Robier\ForgeObject;
 
 use InvalidArgumentException;
-use Robier\FixtureFactory\Exception\FactoryNotDefined;
+use Robier\ForgeObject\Exception\FactoryNotDefined;
+use Robier\ForgeObject\Exception\NoReturnTypeOnCallable;
 
 final class Manager
 {
@@ -24,9 +25,33 @@ final class Manager
      * @param array|callable $setup
      *
      * @return Manager
+     * @throws \ReflectionException
      */
     public function register(string $className, callable $setup): self
     {
+        if ($this->has($className)) {
+            throw new \InvalidArgumentException(sprintf('Forge factory already exists for class %s', $className));
+        }
+
+        // validate setup callable
+        try {
+            $setupReturnType = CallableReturnType::fromCallable($setup);
+        } catch (NoReturnTypeOnCallable $e) {
+            throw new \InvalidArgumentException(sprintf('Return type missing on setup callable on %s class', $className));
+        }
+
+        if ($setupReturnType->isReturnTypeVoid()) {
+            throw new \InvalidArgumentException(sprintf('Setup callable provided for class %s can not allow void as return type', $className));
+        }
+
+        if ($setupReturnType->allowsNull()) {
+            throw new \InvalidArgumentException(sprintf('Setup callable provided for class %s can not allow null as return type', $className));
+        }
+
+        if (!$setupReturnType->isReturnType($className)) {
+            throw new \InvalidArgumentException(sprintf('Setup callable provided for class %s does not provide mentioned class', $className));
+        }
+
         $this->factory[$className] = $setup;
 
         return $this;
@@ -38,11 +63,28 @@ final class Manager
      * @param array|callable $setup
      *
      * @return Manager
+     * @throws InvalidArgumentException
+     * @throws \ReflectionException
      */
     public function registerState(string $className, string $state, callable $setup): self
     {
         if (!$this->has($className)) {
-            throw new InvalidArgumentException('Missing class definition');
+            throw new InvalidArgumentException(
+                sprintf('Class %s is not registered so state %s for that class can not be registered', $className, $state)
+            );
+        }
+
+        // validate setup callable
+        try {
+            $setupReturnType = CallableReturnType::fromCallable($setup);
+        } catch (NoReturnTypeOnCallable $e) {
+            throw new \InvalidArgumentException(sprintf('Return type missing on state %s for %s class, set `void` if function does not return anything', $state, $className));
+        }
+
+        if (!$setupReturnType->isReturnTypeVoid() && !$setupReturnType->isReturnType($className)) {
+            throw new \InvalidArgumentException(
+                sprintf('Return type of state %s for class %s does not match %s', $state, $className, $setupReturnType->getReturnType())
+            );
         }
 
         $this->states[$className][$state] = $setup;
@@ -68,11 +110,11 @@ final class Manager
      */
     public function hasState(string $className, string $state): bool
     {
-        if(!isset($this->states[$className])){
+        if (!isset($this->states[$className])) {
             return false;
         }
 
-        if(!isset($this->states[$className][$state])){
+        if (!isset($this->states[$className][$state])) {
             return false;
         }
 

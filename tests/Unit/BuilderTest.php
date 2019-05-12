@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Robier\FixtureFactory\Test\Unit;
+namespace Robier\ForgeObject\Test\Unit;
 
 use Generator;
 use PHPUnit\Framework\TestCase;
-use Robier\FixtureFactory\Builder;
-use Robier\FixtureFactory\Collection;
-use Robier\FixtureFactory\Exception\StateNotDefined;
+use Robier\ForgeObject\Builder;
+use Robier\ForgeObject\Collection;
+use Robier\ForgeObject\Exception\StateNotDefined;
 use stdClass;
 
 final class BuilderTest extends TestCase
@@ -17,7 +17,7 @@ final class BuilderTest extends TestCase
     {
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             []
@@ -30,11 +30,11 @@ final class BuilderTest extends TestCase
     {
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             [
-                'test' => function(stdClass $testClass): void {
+                'test' => static function (stdClass $testClass): void {
                     $testClass->testProperty = 'property-value';
                 },
             ]
@@ -52,7 +52,7 @@ final class BuilderTest extends TestCase
     {
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             []
@@ -61,7 +61,7 @@ final class BuilderTest extends TestCase
         /** @var stdClass $fixture */
         $fixture = $builder
             ->one(
-                function(stdClass $testClass): void {
+                static function (stdClass $testClass): void {
                     $testClass->testProperty = 'property-value';
                 }
             );
@@ -75,7 +75,7 @@ final class BuilderTest extends TestCase
     {
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             []
@@ -91,11 +91,11 @@ final class BuilderTest extends TestCase
     {
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             [
-                'test' => function(stdClass $testClass): void {
+                'test' => static function (stdClass $testClass): void {
                     $testClass->testProperty = 'property-value';
                 },
             ]
@@ -117,13 +117,13 @@ final class BuilderTest extends TestCase
     {
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             []
         );
 
-        $collection = $builder->many(15, function(stdClass $testClass): void {
+        $collection = $builder->many(15, static function (stdClass $testClass): void {
             $testClass->testProperty = 'property-value';
         });
 
@@ -137,22 +137,6 @@ final class BuilderTest extends TestCase
         }
     }
 
-    public function availableStatesDataProvider(): Generator
-    {
-        yield [
-            2,
-            [
-                'foo' => '',
-                'bar'  => '',
-            ],
-        ];
-
-        yield [
-            0,
-            [],
-        ];
-    }
-
     /**
      * @dataProvider availableStatesDataProvider
      * @param int $count
@@ -162,7 +146,7 @@ final class BuilderTest extends TestCase
     {
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             $states
@@ -179,7 +163,7 @@ final class BuilderTest extends TestCase
 
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             []
@@ -194,11 +178,11 @@ final class BuilderTest extends TestCase
 
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             [
-                'test' => function() use ($stdClass): stdClass {
+                'test' => static function () use ($stdClass): stdClass {
                     return $stdClass;
                 },
             ]
@@ -214,7 +198,7 @@ final class BuilderTest extends TestCase
 
         $builder = new Builder(
             stdClass::class,
-            function(): stdClass {
+            static function (): stdClass {
                 return new stdClass();
             },
             []
@@ -224,10 +208,26 @@ final class BuilderTest extends TestCase
         $this->assertSame(
             $stdClass,
             $builder->one(
-                function() use ($stdClass): stdClass {
+                static function () use ($stdClass): stdClass {
                     return $stdClass;
                 }
             )
         );
+    }
+
+    public function availableStatesDataProvider(): Generator
+    {
+        yield '2 available states' => [
+            2,
+            [
+                'foo' => '',
+                'bar' => '',
+            ],
+        ];
+
+        yield '0 available states' => [
+            0,
+            [],
+        ];
     }
 }

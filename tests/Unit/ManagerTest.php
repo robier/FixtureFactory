@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Robier\FixtureFactory\Test\Unit;
+namespace Robier\ForgeObject\Test\Unit;
 
-use Robier\FixtureFactory\Builder;
-use Robier\FixtureFactory\Exception\FactoryNotDefined;
-use Robier\FixtureFactory\Manager;
+use Robier\ForgeObject\Builder;
+use Robier\ForgeObject\Exception\FactoryNotDefined;
+use Robier\ForgeObject\Manager;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -18,7 +18,7 @@ final class ManagerTest extends TestCase
 
         $this->assertFalse($manager->has(stdClass::class));
 
-        $manager->register(stdClass::class, function(): stdClass{
+        $manager->register(stdClass::class, static function (): stdClass {
             return new stdClass();
         });
 
@@ -27,19 +27,19 @@ final class ManagerTest extends TestCase
 
     public function testStateCanNotBeRegisteredForNotDefinedFactory(): void
     {
-        // @todo change exception
         $this->expectException(\InvalidArgumentException::class);
 
         $manager = new Manager();
 
-        $manager->registerState(stdClass::class, 'test-state', function(){});
+        $manager->registerState(stdClass::class, 'test-state', static function () {
+        });
     }
 
     public function testManagerCreatesNewBuilderWithoutAnyStates(): void
     {
         $manager = new Manager();
 
-        $manager->register(stdClass::class, function(): stdClass{
+        $manager->register(stdClass::class, static function (): stdClass {
             return new stdClass();
         });
 
@@ -53,11 +53,11 @@ final class ManagerTest extends TestCase
     {
         $manager = new Manager();
 
-        $manager->register(stdClass::class, function(): stdClass{
+        $manager->register(stdClass::class, static function (): stdClass {
             return new stdClass();
         });
 
-        $manager->registerState(stdClass::class, 'foo', function(stdClass $item): void{
+        $manager->registerState(stdClass::class, 'foo', static function (stdClass $item): void {
             $item->foo = 'bar';
         });
 
@@ -80,11 +80,14 @@ final class ManagerTest extends TestCase
     {
         $manager = new Manager();
 
-        $manager->register('test', function(){});
-        $manager->registerState('test', 'foo', function(){});
+        $manager->register(stdClass::class, static function (): stdClass {
+            return new stdClass();
+        });
+        $manager->registerState(stdClass::class, 'foo', static function (): void {
+        });
 
         $this->assertFalse($manager->hasState('not-existing', 'bar'));
-        $this->assertFalse($manager->hasState('test', 'bar'));
-        $this->assertTrue($manager->hasState('test', 'foo'));
+        $this->assertFalse($manager->hasState(stdClass::class, 'bar'));
+        $this->assertTrue($manager->hasState(stdClass::class, 'foo'));
     }
 }

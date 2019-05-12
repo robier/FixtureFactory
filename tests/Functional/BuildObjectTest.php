@@ -2,28 +2,33 @@
 
 declare(strict_types=1);
 
-namespace Robier\FixtureFactory\Test\Functional;
+namespace Robier\ForgeObject\Test\Functional;
 
 use PHPUnit\Framework\TestCase;
-use Robier\FixtureFactory\Manager;
+use Robier\ForgeObject\Collection;
+use Robier\ForgeObject\Manager;
 use stdClass;
 
-class BuildObjectTest extends TestCase
+final class BuildObjectTest extends TestCase
 {
     public function testManagerCanRegisterAndCreateFixture(): void
     {
         $manager = new Manager();
 
         // register class
-        $manager->register(stdClass::class, function(): stdClass{
+        $manager->register(stdClass::class, static function (): stdClass {
             $stdClass = new stdClass();
-            $stdClass->test = true;
+            $stdClass->test = (bool)rand(0, 1);
 
             return $stdClass;
         });
 
-        $manager->registerState(stdClass::class, 'false-state', function(stdClass $stdClass): void{
+        $manager->registerState(stdClass::class, 'false-state', static function (stdClass $stdClass): void {
             $stdClass->test = false;
+        });
+
+        $manager->registerState(stdClass::class, 'true-state', static function (stdClass $stdClass): void {
+            $stdClass->test = true;
         });
 
         $builder = $manager->new(stdClass::class);
@@ -32,13 +37,20 @@ class BuildObjectTest extends TestCase
         $fixtureWithoutState = $builder->one();
 
         $this->assertObjectHasAttribute('test', $fixtureWithoutState);
-        $this->assertTrue($fixtureWithoutState->test);
+        // it's a random bool value so we can not test exact value
+        $this->assertIsBool($fixtureWithoutState->test);
 
         // fixture with state
         $fixtureWithState = $builder->state('false-state')->one();
 
         $this->assertObjectHasAttribute('test', $fixtureWithState);
         $this->assertFalse($fixtureWithState->test);
+
+        // fixture with state
+        $fixtureWithState = $builder->state('true-state')->one();
+
+        $this->assertObjectHasAttribute('test', $fixtureWithState);
+        $this->assertTrue($fixtureWithState->test);
     }
 
     public function testManagerCanRegisterAndCreateCollectionOfFixtures(): void
@@ -46,33 +58,55 @@ class BuildObjectTest extends TestCase
         $manager = new Manager();
 
         // register class
-        $manager->register(stdClass::class, function(): stdClass{
+        $manager->register(stdClass::class, static function (): stdClass {
             $stdClass = new stdClass();
-            $stdClass->test = true;
+            $stdClass->test = (bool)rand(0, 1);
 
             return $stdClass;
         });
 
-        $manager->registerState(stdClass::class, 'false-state', function(stdClass $stdClass): void{
+        $manager->registerState(stdClass::class, 'false-state', static function (stdClass $stdClass): void {
             $stdClass->test = false;
+        });
+
+        $manager->registerState(stdClass::class, 'true-state', static function (stdClass $stdClass): void {
+            $stdClass->test = true;
         });
 
         $builder = $manager->new(stdClass::class);
 
         // fixtures without any states
-        $fixtureCollection = $builder->many(30);
+        $fixtureCollection = $builder->many(25);
 
-        foreach($fixtureCollection as $fixture){
+        $this->assertInstanceOf(Collection::class, $fixtureCollection);
+
+        $this->assertCount(25, $fixtureCollection);
+
+        foreach ($fixtureCollection as $fixture) {
             $this->assertObjectHasAttribute('test', $fixture);
-            $this->assertTrue($fixture->test);
+            $this->assertIsBool($fixture->test);
         }
 
         // fixtures with state
         $fixtureCollection = $builder->state('false-state')->many(30);
 
-        foreach($fixtureCollection as $fixture){
+        $this->assertInstanceOf(Collection::class, $fixtureCollection);
+
+        $this->assertCount(30, $fixtureCollection);
+
+        foreach ($fixtureCollection as $fixture) {
             $this->assertObjectHasAttribute('test', $fixture);
             $this->assertFalse($fixture->test);
+        }
+
+        // fixtures with state
+        $fixtureCollection = $builder->state('true-state')->many(35);
+
+        $this->assertCount(35, $fixtureCollection);
+
+        foreach ($fixtureCollection as $fixture) {
+            $this->assertObjectHasAttribute('test', $fixture);
+            $this->assertTrue($fixture->test);
         }
     }
 }
