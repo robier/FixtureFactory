@@ -37,6 +37,6 @@
   "scripts": {
     "test": "phpunit --colors=always --config ./tools/phpunit.xml.dist",
     "phpstan": "phpstan analyse --configuration ./tools/phpstan.neon.dist --level 7 src",
-    "infestation": "infection run --configuration ./tools/infection.json.dist --show-mutations --ansi --initial-tests-php-options=\"-d zend_extension=xdebug.so\""
+    "infestation": "infection run --configuration ./tools/infection.json.dist --show-mutations --ansi"
   }
 }
