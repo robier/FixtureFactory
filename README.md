@@ -9,6 +9,7 @@ Forge object
         <img src="https://codecov.io/gh/robier/forge-object/branch/master/graph/badge.svg" />
     </a>
     <img src="https://badge.stryker-mutator.io/github.com/robier/forge-object/master" alt="Mutation score">
+    <img src="https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg" alt="PHPStan">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT">
 </p>
 
