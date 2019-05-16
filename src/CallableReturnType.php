@@ -62,7 +62,13 @@ final class CallableReturnType
     {
         // ReflectionException should never be thrown as string or array that is provided to function
         // will trigger PHP warning if provided value is not a callable
-        $reflection = is_array($function) ? new ReflectionMethod($function[0], $function[1]) : new ReflectionFunction($function);
+
+        if (is_array($function)) {
+            $reflection = new ReflectionMethod($function[0], $function[1]);
+        } else {
+            $reflection = new ReflectionFunction($function);
+        }
+
         $reflectionReturnType = $reflection->getReturnType();
 
         if (null === $reflectionReturnType) {

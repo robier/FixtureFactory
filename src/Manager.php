@@ -22,7 +22,7 @@ final class Manager
 
     /**
      * @param string $className
-     * @param array|callable $setup
+     * @param callable $setup
      *
      * @return Manager
      * @throws \ReflectionException
@@ -60,7 +60,7 @@ final class Manager
     /**
      * @param string $className
      * @param string $state
-     * @param array|callable $setup
+     * @param callable $setup
      *
      * @return Manager
      * @throws InvalidArgumentException

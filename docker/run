@@ -7,7 +7,7 @@ function runDocker
 
     local -r applicationName=$(cat ${dir}/projectName);
 
-    docker run --rm -v $(pwd):/home/app/src ${applicationName} "$@"
+    docker run --rm -v $(pwd):/home/app/src -it ${applicationName} "$@"
 }
 
 runDocker "$@"

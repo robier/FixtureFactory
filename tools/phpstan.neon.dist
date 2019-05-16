@@ -1,0 +1,9 @@
+includes:
+     # bleeing edge
+     - '../vendor/phpstan/phpstan/conf/bleedingEdge.neon'
+
+parameters:
+    level: max
+
+    ignoreErrors:
+        - '#Parameter \#1 \$name of class ReflectionFunction constructor expects Closure\|string, callable given#'

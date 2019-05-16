@@ -129,10 +129,6 @@ final class Collection implements ArrayAccess, IteratorAggregate, Countable
 
     /**
      * Add new item to collection
-     *
-     * @param object $item
-     * @param object[] $items
-     * @return Collection
      */
     public function add(object $item, object ...$items): self
     {

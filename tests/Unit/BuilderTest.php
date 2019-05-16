@@ -160,6 +160,9 @@ final class BuilderTest extends TestCase
     public function testUndefinedStateCanNotBeAppliedToBuilder(): void
     {
         $this->expectException(StateNotDefined::class);
+        $this->expectExceptionMessage(
+            sprintf('States [%s] not defined for class %s', 'not-existing-state', stdClass::class)
+        );
 
         $builder = new Builder(
             stdClass::class,
